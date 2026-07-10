@@ -278,8 +278,9 @@ const cloudOn=()=>!!(sb&&user);
 function schedulePush(){ if(!cloudOn())return; clearTimeout(_pushT); _pushT=setTimeout(pushCloud,900); }
 async function pushCloud(){
   if(!cloudOn())return;
-  try{ await sb.from("user_data").upsert({user_id:user.id, logs, checks:chkData, updated_at:new Date().toISOString()}); }
-  catch(e){ console.warn("동기화 실패", e); }
+  const {error}=await sb.from("user_data").upsert({user_id:user.id, logs, checks:chkData, updated_at:new Date().toISOString()});
+  if(error){ $("#authState").textContent="⚠ 동기화 오류: "+error.message; console.warn("동기화 실패", error); }
+  else { $("#authState").textContent="☁ "+user.email+" · 저장됨"; }
 }
 async function pullCloud(){
   if(!cloudOn())return false;
