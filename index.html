@@ -137,6 +137,7 @@ textarea.memo{min-height:70px;resize:vertical;margin-top:10px}
     <input id="au_pw" type="password" placeholder="비밀번호" class="au-in">
     <button class="btn sm primary" id="loginBtn">로그인</button>
     <button class="btn sm ghost" id="signupBtn">회원가입</button>
+    <button class="btn sm ghost" id="resetBtn">비밀번호 찾기</button>
   </span>
   <button class="btn sm ghost" id="logoutBtn" style="display:none">로그아웃</button>
 </div>
@@ -303,7 +304,16 @@ async function initCloud(){
   $("#authState").textContent="로그인하면 폰·PC가 자동 연동돼요";
   const {data:{session}}=await sb.auth.getSession();
   if(session){ user=session.user; await afterLogin(); }
-  sb.auth.onAuthStateChange((_e,s)=>{ user=s?s.user:null; });
+  sb.auth.onAuthStateChange(async (event,s)=>{
+    user=s?s.user:null;
+    if(event==="PASSWORD_RECOVERY"){
+      const np=prompt("새 비밀번호를 입력하세요 (6자 이상)");
+      if(np && np.length>=6){
+        const {error}=await sb.auth.updateUser({password:np});
+        alert(error?("변경 실패: "+error.message):"비밀번호가 변경됐어요. 새 비밀번호로 로그인해주세요.");
+      }
+    }
+  });
   $("#loginBtn").onclick=async()=>{
     const email=$("#au_email").value.trim(), password=$("#au_pw").value;
     if(!email||!password){alert("이메일과 비밀번호를 입력해주세요.");return;}
@@ -323,6 +333,13 @@ async function initCloud(){
     await sb.auth.signOut(); user=null;
     $("#authForm").style.display="inline"; $("#logoutBtn").style.display="none";
     $("#authState").textContent="로그아웃됨 · 이 기기 데이터만 표시";
+  };
+  $("#resetBtn").onclick=async()=>{
+    const email=$("#au_email").value.trim();
+    if(!email){alert("먼저 이메일을 입력한 뒤 눌러주세요.");return;}
+    const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.href.split("#")[0]});
+    if(error){alert("메일 전송 실패: "+error.message);return;}
+    alert("비밀번호 재설정 메일을 보냈어요.\n메일의 링크를 눌러 이 사이트로 돌아오면 새 비밀번호를 정할 수 있어요.");
   };
 }
 const todayStr=()=>{const d=new Date();return d.toISOString().slice(0,10)};
