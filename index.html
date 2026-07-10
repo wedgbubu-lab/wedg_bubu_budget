@@ -70,6 +70,9 @@ th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;white
 th{background:var(--teal);color:#2f5850;font-weight:700;position:sticky;top:0}
 tbody tr:nth-child(even){background:var(--band)}
 td.amt{text-align:right;font-variant-numeric:tabular-nums}
+.paidedit{width:140px;padding:5px 7px;font-size:12.5px;border:1px dashed var(--gold-deep);border-radius:7px;background:#fffdf9;color:var(--ink)}
+.paidedit:focus{border-style:solid;border-color:var(--teal-deep)}
+.paidedit.filled{border-style:solid;border-color:var(--line);background:#fff}
 .tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:12px;font-weight:700}
 .tag.카드테크{background:#e7f0fb;color:#2c5170}
 .tag.앱테크{background:#eaf5ea;color:#2E7D32}
@@ -132,7 +135,7 @@ textarea.memo{min-height:70px;resize:vertical;margin-top:10px}
 <section id="log" class="view active">
   <div class="card">
     <h2>부수입 추가</h2>
-    <p class="sub">항목을 고르고 신청일·입금일을 적어보세요. 실입금일을 채우면 자동으로 '완료'가 돼요.</p>
+    <p class="sub">항목을 고르고 신청일·입금예정일을 적어보세요. 실입금일은 나중에 돈이 들어온 날 아래 <b>기록 목록</b>에서 입력하면 자동으로 '완료'가 돼요.</p>
     <div class="form-grid two">
       <label>기록일<input type="date" id="i_date"></label>
       <label>항목
@@ -145,7 +148,6 @@ textarea.memo{min-height:70px;resize:vertical;margin-top:10px}
       <label>플랫폼/앱<input id="i_plat" placeholder="예: 토스"></label>
       <label>신청일<input type="date" id="i_apply"></label>
       <label>입금예정일<input type="date" id="i_expect"></label>
-      <label>실입금일<input type="date" id="i_paid"></label>
       <label>금액(원)<input type="number" id="i_amt" inputmode="numeric" placeholder="15000"></label>
       <label class="full">메모<input id="i_memo" placeholder="선택 입력"></label>
     </div>
@@ -264,11 +266,11 @@ $("#addBtn").onclick=()=>{
   logs.push({
     id:Date.now(), date:$("#i_date").value, cat,
     desc:$("#i_desc").value.trim(), plat:$("#i_plat").value.trim(),
-    apply:$("#i_apply").value, expect:$("#i_expect").value, paid:$("#i_paid").value,
+    apply:$("#i_apply").value, expect:$("#i_expect").value, paid:"",
     amt, memo:$("#i_memo").value.trim()
   });
   save(KEY_LOG,logs);
-  ["i_desc","i_plat","i_apply","i_expect","i_paid","i_amt","i_memo"].forEach(id=>$("#"+id).value="");
+  ["i_desc","i_plat","i_apply","i_expect","i_amt","i_memo"].forEach(id=>$("#"+id).value="");
   renderLog();
 };
 
@@ -287,11 +289,13 @@ function renderLog(){
       <td>${esc(r.plat)||"-"}</td>
       <td>${r.apply||"-"}</td>
       <td>${r.expect||"-"}</td>
-      <td>${r.paid||"-"}</td>
+      <td><input type="date" class="paidedit${r.paid?' filled':''}" value="${r.paid||''}" title="실제로 입금된 날 입력"></td>
       <td class="amt">${won(r.amt)}</td>
       <td><span class="pill ${done?"done":"wait"}">${done?"완료":"대기"}</span></td>
       <td>${esc(r.memo)||"-"}</td>
       <td><button class="del" title="삭제">✕</button></td>`;
+    const pe=tr.querySelector(".paidedit");
+    pe.onchange=()=>{ r.paid=pe.value; save(KEY_LOG,logs); renderLog(); };
     tr.querySelector(".del").onclick=()=>{
       if(confirm("이 기록을 삭제할까요?")){logs=logs.filter(x=>x.id!==r.id);save(KEY_LOG,logs);renderLog();}
     };
