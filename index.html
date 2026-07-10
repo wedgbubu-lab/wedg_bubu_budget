@@ -294,7 +294,7 @@ async function afterLogin(){
   const had=logs.length||Object.keys(chkData).length;
   const has=await pullCloud();
   if(!has && had){ await pushCloud(); }   // 클라우드가 비었고 로컬에 데이터가 있으면 올려줌
-  renderLog(); renderCheck(); initCloud();
+  renderLog(); renderCheck();
 }
 async function initCloud(){
   if(!SB_URL || !SB_KEY || !window.supabase){ return; }  // 미설정 → 로컬 모드 유지
@@ -544,7 +544,7 @@ $("#wPrev").onclick=()=>{weekOffset--;renderCheck()};
 $("#wNext").onclick=()=>{weekOffset++;renderCheck()};
 
 /* init */
-renderLog(); renderCheck();
+renderLog(); renderCheck(); initCloud();
 </script>
 </body>
 </html>
