@@ -83,7 +83,12 @@ td.amt{text-align:right;font-variant-numeric:tabular-nums}
 .pill{padding:2px 10px;border-radius:20px;font-size:12px;font-weight:700}
 .pill.done{background:#e3f1e4;color:var(--green)}
 .pill.wait{background:#fbf0dd;color:#b06e1e}
+.edit{color:var(--teal-deep);cursor:pointer;font-weight:700;border:none;background:none;font-size:15px;margin-right:8px}
 .del{color:var(--red);cursor:pointer;font-weight:700;border:none;background:none;font-size:14px}
+.trend{margin:2px 0 16px}
+.trend svg{width:100%;height:150px;display:block}
+.trend .tempty{color:var(--grey);font-size:13px;text-align:center;padding:18px}
+#addBtn.editing{background:var(--gold-deep)}
 .empty{text-align:center;color:var(--grey);padding:30px 10px;font-size:14px}
 
 /* summary */
@@ -153,6 +158,7 @@ textarea.memo{min-height:70px;resize:vertical;margin-top:10px}
     </div>
     <div class="row-actions">
       <button class="btn primary" id="addBtn">+ 추가하기</button>
+      <button class="btn ghost sm" id="cancelBtn" style="display:none">수정 취소</button>
       <button class="btn ghost sm" id="csvBtn">CSV 내보내기</button>
     </div>
   </div>
@@ -191,7 +197,8 @@ textarea.memo{min-height:70px;resize:vertical;margin-top:10px}
   </div>
   <div class="card">
     <h2>월별 누적</h2>
-    <p class="sub"></p>
+    <p class="sub">월별 부수입 추이를 한눈에 볼 수 있어요.</p>
+    <div class="trend" id="trendChart"></div>
     <div class="tablewrap">
       <table><thead><tr><th>월</th><th>부수입 합계</th><th>건수</th></tr></thead>
       <tbody id="monthBody"></tbody></table>
@@ -256,21 +263,44 @@ $$(".tabs button").forEach(b=>b.onclick=()=>{
 
 /* ===== 부수입 기록 ===== */
 let logs=load(KEY_LOG,[]);
+let editingId=null;
 $("#i_date").value=todayStr();
 
+function clearForm(){["i_desc","i_plat","i_apply","i_expect","i_amt","i_memo"].forEach(id=>$("#"+id).value="");}
+function startEdit(r){
+  editingId=r.id;
+  $("#i_date").value=r.date||""; $("#i_cat").value=r.cat;
+  $("#i_desc").value=r.desc||""; $("#i_plat").value=r.plat||"";
+  $("#i_apply").value=r.apply||""; $("#i_expect").value=r.expect||"";
+  $("#i_amt").value=r.amt||""; $("#i_memo").value=r.memo||"";
+  $("#addBtn").textContent="수정 완료"; $("#addBtn").classList.add("editing");
+  $("#cancelBtn").style.display="inline-block";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function exitEdit(){
+  editingId=null;
+  $("#addBtn").textContent="+ 추가하기"; $("#addBtn").classList.remove("editing");
+  $("#cancelBtn").style.display="none";
+}
+$("#cancelBtn").onclick=()=>{ exitEdit(); clearForm(); };
 $("#addBtn").onclick=()=>{
   const amt=parseFloat($("#i_amt").value);
   const cat=$("#i_cat").value;
   if(!$("#i_date").value){alert("기록일을 입력해주세요.");return;}
   if(!amt||amt<=0){alert("금액을 숫자로 입력해주세요.");return;}
-  logs.push({
-    id:Date.now(), date:$("#i_date").value, cat,
+  const data={date:$("#i_date").value, cat,
     desc:$("#i_desc").value.trim(), plat:$("#i_plat").value.trim(),
-    apply:$("#i_apply").value, expect:$("#i_expect").value, paid:"",
-    amt, memo:$("#i_memo").value.trim()
-  });
+    apply:$("#i_apply").value, expect:$("#i_expect").value,
+    amt, memo:$("#i_memo").value.trim()};
+  if(editingId){
+    const r=logs.find(x=>x.id===editingId);
+    if(r) Object.assign(r,data);
+    exitEdit();
+  }else{
+    logs.push(Object.assign({id:Date.now(), paid:""}, data));
+  }
   save(KEY_LOG,logs);
-  ["i_desc","i_plat","i_apply","i_expect","i_amt","i_memo"].forEach(id=>$("#"+id).value="");
+  clearForm();
   renderLog();
 };
 
@@ -293,9 +323,10 @@ function renderLog(){
       <td class="amt">${won(r.amt)}</td>
       <td><span class="pill ${done?"done":"wait"}">${done?"완료":"대기"}</span></td>
       <td>${esc(r.memo)||"-"}</td>
-      <td><button class="del" title="삭제">✕</button></td>`;
+      <td style="white-space:nowrap"><button class="edit" title="수정">✏️</button><button class="del" title="삭제">✕</button></td>`;
     const pe=tr.querySelector(".paidedit");
     pe.onchange=()=>{ r.paid=pe.value; save(KEY_LOG,logs); renderLog(); };
+    tr.querySelector(".edit").onclick=()=>startEdit(r);
     tr.querySelector(".del").onclick=()=>{
       if(confirm("이 기록을 삭제할까요?")){logs=logs.filter(x=>x.id!==r.id);save(KEY_LOG,logs);renderLog();}
     };
@@ -338,6 +369,31 @@ function renderSummary(){
   const months=Object.keys(byMonth).sort().reverse();
   $("#monthEmpty").style.display=months.length?"none":"block";
   $("#monthBody").innerHTML=months.map(m=>`<tr><td>${m}</td><td class="amt">${won(byMonth[m].sum)}</td><td style="text-align:center">${byMonth[m].cnt}건</td></tr>`).join("");
+  renderTrend(byMonth);
+}
+function renderTrend(byMonth){
+  const box=$("#trendChart");
+  const ms=Object.keys(byMonth).sort();
+  if(ms.length===0){ box.innerHTML='<div class="tempty">기록이 쌓이면 월별 추이 그래프가 나타나요.</div>'; return; }
+  const W=Math.max(320, ms.length*64), H=190, pad=34, base=H-24, top=16;
+  const vmax=Math.max(1,...ms.map(m=>byMonth[m].sum));
+  const bw=Math.min(40,(W-pad*2)/ms.length*0.55);
+  const step=(W-pad*2)/ms.length;
+  const x=i=>pad+step*i+step/2;
+  const y=v=>base-(v/vmax)*(base-top);
+  let bars="", labels="", pts=[], dots="";
+  ms.forEach((m,i)=>{
+    const v=byMonth[m].sum, cx=x(i), yy=y(v);
+    bars+=`<rect x="${cx-bw/2}" y="${yy}" width="${bw}" height="${base-yy}" rx="5" fill="var(--teal)"></rect>`;
+    bars+=`<text x="${cx}" y="${yy-6}" text-anchor="middle" font-size="10" fill="#7a8aa8">${(v/10000).toFixed(v>=10000?0:1)}만</text>`;
+    labels+=`<text x="${cx}" y="${H-6}" text-anchor="middle" font-size="10.5" fill="#8a8797">${m.slice(2)}</text>`;
+    pts.push(`${cx},${yy}`);
+    dots+=`<circle cx="${cx}" cy="${yy}" r="3" fill="var(--gold-deep)"></circle>`;
+  });
+  const line=ms.length>1?`<polyline points="${pts.join(' ')}" fill="none" stroke="var(--gold-deep)" stroke-width="2" opacity=".85"></polyline>`:"";
+  box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img">`
+    +`<line x1="${pad}" y1="${base}" x2="${W-pad+10}" y2="${base}" stroke="var(--line)" stroke-width="1"></line>`
+    +bars+line+dots+labels+`</svg>`;
 }
 
 /* ===== 지출 점검표 ===== */
