@@ -39,6 +39,14 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 .modal-x{position:absolute;top:12px;right:14px;border:none;background:none;font-size:17px;
   cursor:pointer;color:var(--grey)}
 .foot a{color:var(--navy);font-weight:700;text-decoration:none}
+.su-lab{display:block;font-size:12px;color:var(--grey);margin-bottom:10px}
+.su-lab input{margin-top:4px}
+.su-consent{margin-top:14px;padding:12px 14px;background:var(--band);border:1px solid var(--line);border-radius:10px}
+.su-consent label{display:flex;align-items:center;gap:7px;font-size:12.5px;color:#5a5a68;margin:7px 0;cursor:pointer}
+.su-consent input[type=checkbox]{width:auto;margin:0;cursor:pointer}
+.su-consent hr{border:none;border-top:1px solid var(--line);margin:9px 0}
+.su-consent a{color:var(--navy);font-weight:700}
+.su-consent .req{color:#c0392b;font-weight:700}
 .copyright{margin:16px 4px 12px;text-align:center;background:rgba(255,255,255,.66);
   border:1px solid var(--line);border-radius:14px;padding:14px 16px 13px;
   box-shadow:0 1px 4px rgba(107,124,160,.06)}
@@ -155,11 +163,6 @@ textarea.memo{min-height:70px;resize:vertical;margin-top:10px}
     <button class="btn sm primary" id="loginBtn">로그인</button>
     <button class="btn sm ghost" id="signupBtn">회원가입</button>
     <button class="btn sm ghost" id="resetBtn">비밀번호 찾기</button>
-    <span class="consent">
-      <label><input type="checkbox" id="ck_age"> <span class="req">[필수]</span> 만 14세 이상입니다</label>
-      <label><input type="checkbox" id="ck_terms"> <span class="req">[필수]</span> <a href="#" id="termsLink">이용약관</a>에 동의합니다</label>
-      <label><input type="checkbox" id="ck_priv"> <span class="req">[필수]</span> <a href="#" id="privLink">개인정보 수집·이용</a>에 동의합니다</label>
-    </span>
   </span>
   <button class="btn sm ghost" id="logoutBtn" style="display:none">로그아웃</button>
 </div>
@@ -280,6 +283,24 @@ textarea.memo{min-height:70px;resize:vertical;margin-top:10px}
   <p class="cr-text">본 콘텐츠는 <b>웨지부부 멤버십 구독자</b>만을 위해 제작되었습니다.<br>
   무단 복제 · 배포 · 재판매를 일절 금하며, 모든 권리는 웨지부부에게 있습니다.</p>
   <div class="cr-mark">ⓒ WEDG_BUBU. All rights reserved.</div>
+</div>
+
+<div class="modal" id="signupModal">
+  <div class="modal-box" style="max-width:420px">
+    <button class="modal-x" id="signupClose">✕</button>
+    <h3>회원가입</h3>
+    <p style="color:var(--grey);margin-bottom:14px">가입하면 폰·PC에서 데이터가 자동으로 연동돼요.</p>
+    <label class="su-lab">이메일<input type="email" id="su_email" placeholder="example@email.com"></label>
+    <label class="su-lab">비밀번호 <span style="color:var(--grey);font-weight:400">(6자 이상)</span><input type="password" id="su_pw" placeholder="비밀번호"></label>
+    <div class="su-consent">
+      <label><input type="checkbox" id="ck_all"> <b>전체 동의</b></label>
+      <hr>
+      <label><input type="checkbox" id="ck_age"> <span class="req">[필수]</span> 만 14세 이상입니다</label>
+      <label><input type="checkbox" id="ck_terms"> <span class="req">[필수]</span> <a href="#" id="termsLink">이용약관</a>에 동의합니다</label>
+      <label><input type="checkbox" id="ck_priv"> <span class="req">[필수]</span> <a href="#" id="privLink">개인정보 수집·이용</a>에 동의합니다</label>
+    </div>
+    <button class="btn primary" id="doSignupBtn" style="width:100%;margin-top:16px">가입하기</button>
+  </div>
 </div>
 
 <div class="modal" id="termsModal">
@@ -460,16 +481,24 @@ async function initCloud(){
     if(error){alert("로그인 실패: "+error.message);return;}
     user=data.user; await afterLogin();
   };
-  $("#signupBtn").onclick=async()=>{
-    const email=$("#au_email").value.trim(), password=$("#au_pw").value;
-    if(!email||password.length<6){alert("이메일과 6자 이상 비밀번호를 입력해주세요.");return;}
-    if(!$("#ck_age").checked){alert("만 14세 이상만 가입할 수 있어요.\n[필수] 만 14세 이상 항목에 체크해주세요.");return;}
-    if(!$("#ck_terms").checked){alert("이용약관 동의가 필요해요.\n[필수] 이용약관 항목에 체크해주세요.");return;}
-    if(!$("#ck_priv").checked){alert("개인정보 수집·이용 동의가 필요해요.\n[필수] 동의 항목에 체크해주세요.");return;}
+  $("#signupBtn").onclick=()=>{
+    $("#su_email").value=$("#au_email").value.trim();
+    $("#su_pw").value="";
+    ["ck_all","ck_age","ck_terms","ck_priv"].forEach(id=>$("#"+id).checked=false);
+    openSignup();
+  };
+  $("#doSignupBtn").onclick=async()=>{
+    const email=$("#su_email").value.trim(), password=$("#su_pw").value;
+    if(!email){alert("이메일을 입력해주세요.");return;}
+    if(password.length<6){alert("비밀번호를 6자 이상 입력해주세요.");return;}
+    if(!$("#ck_age").checked){alert("만 14세 이상만 가입할 수 있어요.");return;}
+    if(!$("#ck_terms").checked){alert("이용약관에 동의해주세요.");return;}
+    if(!$("#ck_priv").checked){alert("개인정보 수집·이용에 동의해주세요.");return;}
     const {data,error}=await sb.auth.signUp({email,password,options:{data:{
       age_over_14:true, terms_consent:true, privacy_consent:true, consented_at:new Date().toISOString()
     }}});
     if(error){alert("회원가입 실패: "+error.message);return;}
+    closeSignup();
     if(data.session){ user=data.user; await afterLogin(); }
     else{ alert("가입 완료! 이메일 인증을 켜두셨다면 메일의 링크를 눌러 인증 후 로그인해주세요."); }
   };
@@ -712,6 +741,17 @@ $("#privLink").onclick=openPriv;
 $("#privLink2").onclick=openPriv;
 $("#privClose").onclick=closePriv;
 $("#privModal").onclick=e=>{ if(e.target.id==="privModal") closePriv(); };
+function openSignup(){ $("#signupModal").classList.add("show"); }
+function closeSignup(){ $("#signupModal").classList.remove("show"); }
+$("#signupClose").onclick=closeSignup;
+$("#signupModal").onclick=e=>{ if(e.target.id==="signupModal") closeSignup(); };
+$("#ck_all").onclick=()=>{
+  const v=$("#ck_all").checked;
+  ["ck_age","ck_terms","ck_priv"].forEach(id=>$("#"+id).checked=v);
+};
+["ck_age","ck_terms","ck_priv"].forEach(id=>$("#"+id).onchange=()=>{
+  $("#ck_all").checked=["ck_age","ck_terms","ck_priv"].every(x=>$("#"+x).checked);
+});
 function openTerms(e){ if(e)e.preventDefault(); $("#termsModal").classList.add("show"); }
 function closeTerms(){ $("#termsModal").classList.remove("show"); }
 $("#termsLink").onclick=openTerms;
