@@ -39,6 +39,13 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 .modal-x{position:absolute;top:12px;right:14px;border:none;background:none;font-size:17px;
   cursor:pointer;color:var(--grey)}
 .foot a{color:var(--navy);font-weight:700;text-decoration:none}
+#appArea{display:none}
+#appArea.on{display:block}
+.gate{background:#fff;border-radius:16px;padding:38px 24px;text-align:center;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:16px}
+.gate .lock{font-size:30px;margin-bottom:10px}
+.gate h2{margin:0 0 9px;color:var(--navy);font-size:18px}
+.gate p{margin:0;color:var(--grey);font-size:13.5px;line-height:1.8}
 .su-lab{display:block;font-size:12px;color:var(--grey);margin-bottom:10px}
 .su-lab input{margin-top:4px}
 .su-consent{margin-top:14px;padding:12px 14px;background:var(--band);border:1px solid var(--line);border-radius:10px}
@@ -171,6 +178,15 @@ textarea.memo{min-height:70px;resize:vertical;margin-top:10px}
   <p>부수입은 차곡차곡, 지출은 꼼꼼하게 — 입력한 내용은 이 브라우저에 자동 저장돼요.</p>
 </header>
 
+<div class="gate" id="loginGate">
+  <div class="lock">🔒</div>
+  <h2>로그인이 필요해요</h2>
+  <p>웨지부부 멤버십 구독자 전용 서비스입니다.<br>
+  위쪽에서 <b>로그인</b>하시거나, 처음이시면 <b>회원가입</b>을 눌러주세요.<br>
+  로그인하면 폰·PC 어디서든 내 기록이 그대로 이어져요.</p>
+</div>
+
+<div id="appArea">
 <div class="tabs">
   <button data-tab="log" class="active">부수입 기록</button>
   <button data-tab="summary">월별 요약</button>
@@ -272,9 +288,10 @@ textarea.memo{min-height:70px;resize:vertical;margin-top:10px}
     <textarea class="memo" id="chkMemo" placeholder="이번 주 한 줄 회고 / 다음 주 목표를 적어보세요."></textarea>
   </div>
 </section>
+</div>
 
 <p class="foot">
-  💾 모든 데이터는 이 기기의 브라우저에만 저장돼요. 다른 사람에게 파일을 공유해도 서로의 기록은 섞이지 않아요.<br>
+  🔒 내 기록은 내 계정에만 저장되고 다른 사람은 볼 수 없어요. 로그인하면 폰·PC가 자동으로 연동돼요.<br>
   웨지부부 · 부수입 벌고 경제공부 함께해요<br>
   <a href="#" id="termsLink2">이용약관</a> · <a href="#" id="privLink2">개인정보처리방침</a>
 </p>
@@ -462,6 +479,8 @@ async function pullCloud(){
 async function afterLogin(){
   $("#authForm").style.display="none";
   $("#logoutBtn").style.display="inline-block";
+  $("#loginGate").style.display="none";
+  $("#appArea").classList.add("on");
   $("#authState").textContent="☁ "+user.email+" · 자동 동기화 켜짐";
   const had=logs.length||Object.keys(chkData).length;
   const has=await pullCloud();
@@ -469,7 +488,10 @@ async function afterLogin(){
   renderLog(); renderCheck();
 }
 async function initCloud(){
-  if(!SB_URL || !SB_KEY || !window.supabase){ return; }  // 미설정 → 로컬 모드 유지
+  if(!SB_URL || !SB_KEY || !window.supabase){
+    $("#authState").textContent="⚠ 서버 연결에 문제가 있어요. 인터넷 확인 후 새로고침해주세요.";
+    return;
+  }
   sb=window.supabase.createClient(SB_URL, SB_KEY);
   // 비밀번호 재설정 링크로 들어왔는지 먼저 확인 (감지를 놓치지 않도록 최우선 등록)
   const isRecovery=/type=recovery/.test(window.location.hash)
@@ -529,7 +551,9 @@ async function initCloud(){
   $("#logoutBtn").onclick=async()=>{
     await sb.auth.signOut(); user=null;
     $("#authForm").style.display="inline"; $("#logoutBtn").style.display="none";
-    $("#authState").textContent="로그아웃됨 · 이 기기 데이터만 표시";
+    $("#appArea").classList.remove("on");
+    $("#loginGate").style.display="block";
+    $("#authState").textContent="로그아웃됐어요";
   };
   $("#resetBtn").onclick=async()=>{
     const email=$("#au_email").value.trim();
