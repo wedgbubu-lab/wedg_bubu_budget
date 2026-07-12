@@ -285,6 +285,17 @@ textarea.memo{min-height:70px;resize:vertical;margin-top:10px}
   <div class="cr-mark">ⓒ WEDG_BUBU. All rights reserved.</div>
 </div>
 
+<div class="modal" id="pwModal">
+  <div class="modal-box" style="max-width:400px">
+    <button class="modal-x" id="pwClose">✕</button>
+    <h3>새 비밀번호 설정</h3>
+    <p style="color:var(--grey);margin-bottom:14px">앞으로 사용할 새 비밀번호를 입력해주세요.</p>
+    <label class="su-lab">새 비밀번호 <span style="color:var(--grey);font-weight:400">(6자 이상)</span><input type="password" id="pw_new"></label>
+    <label class="su-lab">새 비밀번호 확인<input type="password" id="pw_new2"></label>
+    <button class="btn primary" id="pwSaveBtn" style="width:100%;margin-top:10px">비밀번호 변경</button>
+  </div>
+</div>
+
 <div class="modal" id="signupModal">
   <div class="modal-box" style="max-width:420px">
     <button class="modal-x" id="signupClose">✕</button>
@@ -460,20 +471,31 @@ async function afterLogin(){
 async function initCloud(){
   if(!SB_URL || !SB_KEY || !window.supabase){ return; }  // 미설정 → 로컬 모드 유지
   sb=window.supabase.createClient(SB_URL, SB_KEY);
+  // 비밀번호 재설정 링크로 들어왔는지 먼저 확인 (감지를 놓치지 않도록 최우선 등록)
+  const isRecovery=/type=recovery/.test(window.location.hash);
+  sb.auth.onAuthStateChange((event,s)=>{
+    user=s?s.user:null;
+    if(event==="PASSWORD_RECOVERY"){ openPw(); }
+  });
   $("#authForm").style.display="inline";
   $("#authState").textContent="로그인하면 폰·PC가 자동 연동돼요";
+  $("#pwSaveBtn").onclick=async()=>{
+    const a=$("#pw_new").value, b=$("#pw_new2").value;
+    if(a.length<6){alert("비밀번호는 6자 이상이어야 해요.");return;}
+    if(a!==b){alert("두 비밀번호가 서로 달라요. 다시 확인해주세요.");return;}
+    const {error}=await sb.auth.updateUser({password:a});
+    if(error){alert("변경 실패: "+error.message);return;}
+    closePw();
+    alert("비밀번호가 변경됐어요! 앞으로 새 비밀번호로 로그인하세요.");
+    history.replaceState(null,"",window.location.pathname);
+    if(user) await afterLogin();
+  };
   const {data:{session}}=await sb.auth.getSession();
-  if(session){ user=session.user; await afterLogin(); }
-  sb.auth.onAuthStateChange(async (event,s)=>{
-    user=s?s.user:null;
-    if(event==="PASSWORD_RECOVERY"){
-      const np=prompt("새 비밀번호를 입력하세요 (6자 이상)");
-      if(np && np.length>=6){
-        const {error}=await sb.auth.updateUser({password:np});
-        alert(error?("변경 실패: "+error.message):"비밀번호가 변경됐어요. 새 비밀번호로 로그인해주세요.");
-      }
-    }
-  });
+  if(session){
+    user=session.user;
+    if(isRecovery){ openPw(); }   // 재설정으로 들어온 경우 → 새 비밀번호 창
+    else { await afterLogin(); }
+  }
   $("#loginBtn").onclick=async()=>{
     const email=$("#au_email").value.trim(), password=$("#au_pw").value;
     if(!email||!password){alert("이메일과 비밀번호를 입력해주세요.");return;}
@@ -741,6 +763,9 @@ $("#privLink").onclick=openPriv;
 $("#privLink2").onclick=openPriv;
 $("#privClose").onclick=closePriv;
 $("#privModal").onclick=e=>{ if(e.target.id==="privModal") closePriv(); };
+function openPw(){ $("#pwModal").classList.add("show"); $("#pw_new").value=""; $("#pw_new2").value=""; }
+function closePw(){ $("#pwModal").classList.remove("show"); }
+$("#pwClose").onclick=closePw;
 function openSignup(){ $("#signupModal").classList.add("show"); }
 function closeSignup(){ $("#signupModal").classList.remove("show"); }
 $("#signupClose").onclick=closeSignup;
