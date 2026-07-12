@@ -22,6 +22,23 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 .auth-state{font-size:12px;color:var(--navy);font-weight:700}
 .au-in{width:auto;flex:0 1 150px;padding:7px 9px;font-size:13px}
 .authbar .btn.sm{padding:6px 11px}
+.consent{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:11.5px;color:var(--grey)}
+.consent label{display:inline-flex;align-items:center;gap:4px;cursor:pointer}
+.consent input[type=checkbox]{width:auto;margin:0;cursor:pointer}
+.consent a{color:var(--navy);font-weight:700}
+.consent .req{color:#c0392b;font-weight:700}
+.modal{display:none;position:fixed;inset:0;background:rgba(40,40,60,.45);z-index:100;
+  align-items:center;justify-content:center;padding:18px}
+.modal.show{display:flex}
+.modal-box{background:#fff;max-width:580px;width:100%;max-height:82vh;overflow:auto;
+  border-radius:16px;padding:24px 22px;position:relative;box-shadow:0 8px 30px rgba(0,0,0,.2)}
+.modal-box h3{margin:0 0 4px;color:var(--navy);font-size:17px}
+.modal-box h4{margin:16px 0 5px;color:var(--gold-deep);font-size:13px}
+.modal-box p,.modal-box li{font-size:12.5px;line-height:1.75;color:#5a5a68;margin:0}
+.modal-box ul{margin:0;padding-left:18px}
+.modal-x{position:absolute;top:12px;right:14px;border:none;background:none;font-size:17px;
+  cursor:pointer;color:var(--grey)}
+.foot a{color:var(--navy);font-weight:700;text-decoration:none}
 .copyright{margin:16px 4px 12px;text-align:center;background:rgba(255,255,255,.66);
   border:1px solid var(--line);border-radius:14px;padding:14px 16px 13px;
   box-shadow:0 1px 4px rgba(107,124,160,.06)}
@@ -138,6 +155,11 @@ textarea.memo{min-height:70px;resize:vertical;margin-top:10px}
     <button class="btn sm primary" id="loginBtn">로그인</button>
     <button class="btn sm ghost" id="signupBtn">회원가입</button>
     <button class="btn sm ghost" id="resetBtn">비밀번호 찾기</button>
+    <span class="consent">
+      <label><input type="checkbox" id="ck_age"> <span class="req">[필수]</span> 만 14세 이상입니다</label>
+      <label><input type="checkbox" id="ck_terms"> <span class="req">[필수]</span> <a href="#" id="termsLink">이용약관</a>에 동의합니다</label>
+      <label><input type="checkbox" id="ck_priv"> <span class="req">[필수]</span> <a href="#" id="privLink">개인정보 수집·이용</a>에 동의합니다</label>
+    </span>
   </span>
   <button class="btn sm ghost" id="logoutBtn" style="display:none">로그아웃</button>
 </div>
@@ -250,13 +272,129 @@ textarea.memo{min-height:70px;resize:vertical;margin-top:10px}
 
 <p class="foot">
   💾 모든 데이터는 이 기기의 브라우저에만 저장돼요. 다른 사람에게 파일을 공유해도 서로의 기록은 섞이지 않아요.<br>
-  웨지부부 · 부수입 벌고 경제공부 함께해요
+  웨지부부 · 부수입 벌고 경제공부 함께해요<br>
+  <a href="#" id="termsLink2">이용약관</a> · <a href="#" id="privLink2">개인정보처리방침</a>
 </p>
 <div class="copyright">
   <div class="cr-emblem">— &nbsp;WEDG_BUBU&nbsp;·&nbsp;MEMBERSHIP&nbsp;EXCLUSIVE&nbsp; —</div>
   <p class="cr-text">본 콘텐츠는 <b>웨지부부 멤버십 구독자</b>만을 위해 제작되었습니다.<br>
   무단 복제 · 배포 · 재판매를 일절 금하며, 모든 권리는 웨지부부에게 있습니다.</p>
   <div class="cr-mark">ⓒ WEDG_BUBU. All rights reserved.</div>
+</div>
+
+<div class="modal" id="termsModal">
+  <div class="modal-box">
+    <button class="modal-x" id="termsClose">✕</button>
+    <h3>이용약관</h3>
+    <p style="color:var(--grey)">웨지부부 부수입 가계부(이하 "서비스") 이용에 관한 조건을 정합니다.</p>
+
+    <h4>제1조 (목적)</h4>
+    <p>본 약관은 웨지부부(이하 "운영자")가 제공하는 서비스의 이용 조건과 절차, 운영자와 이용자의 권리·의무를 정함을 목적으로 합니다.</p>
+
+    <h4>제2조 (서비스의 내용)</h4>
+    <ul>
+      <li>부수입 기록 및 집계, 지출 점검표 등 개인 기록 도구를 제공합니다.</li>
+      <li>회원으로 로그인한 경우 여러 기기 간 데이터 동기화 기능을 제공합니다.</li>
+      <li>서비스는 무료로 제공되며, 운영자는 서비스의 내용을 변경하거나 중단할 수 있습니다.</li>
+    </ul>
+
+    <h4>제3조 (회원가입 및 계정)</h4>
+    <ul>
+      <li>서비스는 <b>만 14세 이상</b>만 가입할 수 있습니다.</li>
+      <li>이용자는 본인의 이메일과 비밀번호를 정확히 관리할 책임이 있으며, 계정 관리 소홀로 발생한 문제에 대해 운영자는 책임지지 않습니다.</li>
+      <li>이용자는 언제든지 탈퇴(계정 삭제)를 요청할 수 있습니다.</li>
+    </ul>
+
+    <h4>제4조 (투자·재무 자문이 아님 · 면책)</h4>
+    <ul>
+      <li><b>본 서비스는 이용자가 직접 입력한 내용을 정리·계산해 보여주는 기록 도구일 뿐이며, 투자 자문·재무 자문·세무 자문이 아닙니다.</b></li>
+      <li>카드테크·앱테크·공모주·초대코드·SNS 부수입 등 이용자의 모든 경제활동에 대한 판단과 그 결과(손익 포함)는 <b>전적으로 이용자 본인의 책임</b>입니다.</li>
+      <li>서비스에 표시되는 수치는 이용자의 입력값에 근거하므로 정확성을 보장하지 않으며, 세무 신고 등 공식 자료로 사용할 수 없습니다.</li>
+    </ul>
+
+    <h4>제5조 (데이터 보관 및 백업)</h4>
+    <ul>
+      <li>로그인하지 않은 경우 데이터는 이용자의 기기(브라우저)에만 저장되며, 브라우저 기록 삭제 시 복구할 수 없습니다.</li>
+      <li>운영자는 데이터의 영구 보관을 보장하지 않습니다. 이용자는 <b>CSV 내보내기 기능으로 주기적으로 백업</b>할 것을 권장합니다.</li>
+      <li>천재지변, 외부 서비스(클라우드) 장애 등 운영자의 통제를 벗어난 사유로 인한 데이터 손실에 대해 운영자는 책임지지 않습니다.</li>
+    </ul>
+
+    <h4>제6조 (금지행위 및 지적재산권)</h4>
+    <ul>
+      <li>본 서비스와 그 콘텐츠에 대한 모든 권리는 운영자(웨지부부)에게 있습니다.</li>
+      <li>이용자는 서비스를 <b>무단으로 복제·배포·재판매·2차 가공</b>할 수 없습니다.</li>
+      <li>서비스의 정상적인 운영을 방해하는 행위, 타인의 계정을 도용하는 행위를 금합니다.</li>
+      <li>위반 시 운영자는 사전 통지 없이 이용을 제한하거나 계정을 삭제할 수 있습니다.</li>
+    </ul>
+
+    <h4>제7조 (서비스의 변경 및 중단)</h4>
+    <p>운영자는 서비스를 변경하거나 종료할 수 있으며, 종료 시 가능한 범위에서 사전에 공지합니다. 무료 서비스의 특성상 중단으로 인한 손해에 대해 운영자는 책임을 지지 않습니다.</p>
+
+    <h4>제8조 (약관의 변경)</h4>
+    <p>운영자는 필요 시 약관을 변경할 수 있으며, 변경된 약관은 서비스 내 공지 시점부터 효력이 발생합니다. 변경에 동의하지 않는 이용자는 탈퇴할 수 있습니다.</p>
+
+    <h4>제9조 (준거법 및 관할)</h4>
+    <p>본 약관은 대한민국 법률에 따르며, 서비스 이용과 관련한 분쟁은 민사소송법상의 관할 법원에 제소합니다.</p>
+
+    <h4>문의</h4>
+    <p>이메일: wedgbubu@gmail.com</p>
+  </div>
+</div>
+
+<div class="modal" id="privModal">
+  <div class="modal-box">
+    <button class="modal-x" id="privClose">✕</button>
+    <h3>개인정보 수집·이용 동의 및 처리방침</h3>
+    <p style="color:var(--grey)">웨지부부 부수입 가계부(이하 "서비스")는 아래와 같이 개인정보를 처리합니다.</p>
+
+    <h4>1. 수집하는 개인정보 항목</h4>
+    <ul>
+      <li>필수: 이메일 주소, 비밀번호(암호화되어 저장되며 운영자도 원문을 볼 수 없습니다)</li>
+      <li>서비스 이용 중 이용자가 직접 입력한 정보: 부수입 기록(항목·금액·날짜·메모 등), 지출 점검 기록</li>
+    </ul>
+
+    <h4>2. 수집·이용 목적</h4>
+    <ul>
+      <li>회원 식별 및 로그인 인증</li>
+      <li>이용자의 여러 기기(휴대폰·PC) 간 데이터 동기화 및 보관</li>
+    </ul>
+
+    <h4>3. 보유 및 이용 기간</h4>
+    <ul>
+      <li>회원 탈퇴(계정 삭제) 시 지체 없이 파기합니다.</li>
+      <li>이용자는 언제든지 삭제를 요청할 수 있으며, 요청 시 즉시 파기합니다.</li>
+    </ul>
+
+    <h4>4. 처리 위탁 및 국외 이전</h4>
+    <ul>
+      <li>수탁자: Supabase, Inc. (데이터 저장 및 인증 처리)</li>
+      <li>위탁 업무: 회원 인증, 데이터 보관</li>
+      <li>서버가 국외에 위치할 수 있으며, 동의 시 국외 이전에 함께 동의하는 것으로 봅니다.</li>
+    </ul>
+
+    <h4>5. 만 14세 미만 아동</h4>
+    <ul>
+      <li>본 서비스는 <b>만 14세 미만 아동의 회원가입을 받지 않습니다.</b> 만 14세 이상만 가입할 수 있습니다.</li>
+    </ul>
+
+    <h4>6. 이용자의 권리</h4>
+    <ul>
+      <li>이용자는 개인정보의 열람·정정·삭제·처리정지를 언제든지 요구할 수 있습니다.</li>
+      <li>동의를 거부할 권리가 있으나, 필수 항목에 동의하지 않으면 회원가입 및 동기화 기능을 이용할 수 없습니다. (로그인 없이 기기에만 저장하는 방식은 계속 이용 가능합니다.)</li>
+    </ul>
+
+    <h4>7. 안전성 확보 조치</h4>
+    <ul>
+      <li>비밀번호는 암호화하여 저장하며, 이용자별 접근 권한 제어(RLS)를 적용해 본인 외에는 데이터에 접근할 수 없습니다.</li>
+      <li>모든 통신은 HTTPS로 암호화됩니다.</li>
+    </ul>
+
+    <h4>8. 문의처</h4>
+    <ul>
+      <li>개인정보 보호책임자: 웨지부부</li>
+      <li>이메일: wedgbubu@gmail.com</li>
+    </ul>
+  </div>
 </div>
 </div>
 
@@ -325,7 +463,12 @@ async function initCloud(){
   $("#signupBtn").onclick=async()=>{
     const email=$("#au_email").value.trim(), password=$("#au_pw").value;
     if(!email||password.length<6){alert("이메일과 6자 이상 비밀번호를 입력해주세요.");return;}
-    const {data,error}=await sb.auth.signUp({email,password});
+    if(!$("#ck_age").checked){alert("만 14세 이상만 가입할 수 있어요.\n[필수] 만 14세 이상 항목에 체크해주세요.");return;}
+    if(!$("#ck_terms").checked){alert("이용약관 동의가 필요해요.\n[필수] 이용약관 항목에 체크해주세요.");return;}
+    if(!$("#ck_priv").checked){alert("개인정보 수집·이용 동의가 필요해요.\n[필수] 동의 항목에 체크해주세요.");return;}
+    const {data,error}=await sb.auth.signUp({email,password,options:{data:{
+      age_over_14:true, terms_consent:true, privacy_consent:true, consented_at:new Date().toISOString()
+    }}});
     if(error){alert("회원가입 실패: "+error.message);return;}
     if(data.session){ user=data.user; await afterLogin(); }
     else{ alert("가입 완료! 이메일 인증을 켜두셨다면 메일의 링크를 눌러 인증 후 로그인해주세요."); }
@@ -562,6 +705,20 @@ $("#wPrev").onclick=()=>{weekOffset--;renderCheck()};
 $("#wNext").onclick=()=>{weekOffset++;renderCheck()};
 
 /* init */
+/* 개인정보처리방침 모달 */
+function openPriv(e){ if(e)e.preventDefault(); $("#privModal").classList.add("show"); }
+function closePriv(){ $("#privModal").classList.remove("show"); }
+$("#privLink").onclick=openPriv;
+$("#privLink2").onclick=openPriv;
+$("#privClose").onclick=closePriv;
+$("#privModal").onclick=e=>{ if(e.target.id==="privModal") closePriv(); };
+function openTerms(e){ if(e)e.preventDefault(); $("#termsModal").classList.add("show"); }
+function closeTerms(){ $("#termsModal").classList.remove("show"); }
+$("#termsLink").onclick=openTerms;
+$("#termsLink2").onclick=openTerms;
+$("#termsClose").onclick=closeTerms;
+$("#termsModal").onclick=e=>{ if(e.target.id==="termsModal") closeTerms(); };
+
 renderLog(); renderCheck(); initCloud();
 </script>
 </body>
