@@ -472,10 +472,12 @@ async function initCloud(){
   if(!SB_URL || !SB_KEY || !window.supabase){ return; }  // 미설정 → 로컬 모드 유지
   sb=window.supabase.createClient(SB_URL, SB_KEY);
   // 비밀번호 재설정 링크로 들어왔는지 먼저 확인 (감지를 놓치지 않도록 최우선 등록)
-  const isRecovery=/type=recovery/.test(window.location.hash);
+  const isRecovery=/type=recovery/.test(window.location.hash)
+                || new URLSearchParams(window.location.search).has("reset");
   sb.auth.onAuthStateChange((event,s)=>{
     user=s?s.user:null;
     if(event==="PASSWORD_RECOVERY"){ openPw(); }
+    else if(isRecovery && event==="SIGNED_IN"){ openPw(); }
   });
   $("#authForm").style.display="inline";
   $("#authState").textContent="로그인하면 폰·PC가 자동 연동돼요";
@@ -532,7 +534,8 @@ async function initCloud(){
   $("#resetBtn").onclick=async()=>{
     const email=$("#au_email").value.trim();
     if(!email){alert("먼저 이메일을 입력한 뒤 눌러주세요.");return;}
-    const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.href.split("#")[0]});
+    const base=window.location.origin+window.location.pathname;
+    const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:base+"?reset=1"});
     if(error){alert("메일 전송 실패: "+error.message);return;}
     alert("비밀번호 재설정 메일을 보냈어요.\n메일의 링크를 눌러 이 사이트로 돌아오면 새 비밀번호를 정할 수 있어요.");
   };
