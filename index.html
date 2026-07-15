@@ -740,7 +740,7 @@ $("#csvBtn").onclick=()=>{
 
 /* ===== 월별 요약 ===== */
 const CATS=["카드테크","앱테크","공모주","초대코드","SNS부수입","기타"];
-const CATCOLOR={"카드테크":"#6EA8DE","앱테크":"#6BB077","공모주":"#E0A458","초대코드":"#A97FCB","SNS부수입":"#E4749A","기타":"#B7B2C2"};
+const CATCOLOR={"카드테크":"#B8D2F0","앱테크":"#BEE0C2","공모주":"#F3D6AE","초대코드":"#DAC8EC","SNS부수입":"#F5C6D5","기타":"#DCD8E2"};
 function renderSummary(){
   const total=logs.reduce((s,r)=>s+Number(r.amt||0),0);
   const done=logs.filter(r=>r.paid).reduce((s,r)=>s+Number(r.amt||0),0);
