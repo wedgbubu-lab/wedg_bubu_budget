@@ -167,7 +167,15 @@ td.amt{text-align:right;font-variant-numeric:tabular-nums}
 .week-nav .lbl{font-weight:700;color:var(--navy);font-size:14px}
 .chk-table{min-width:560px}
 .chk-table th,.chk-table td{text-align:center}
-.chk-table td.item{text-align:left;font-size:13px;white-space:normal;min-width:180px}
+.chk-table td.item{text-align:left;font-size:13px;white-space:normal;min-width:170px}
+/* 점검 항목 열 고정 (요일만 좌우 스크롤) */
+.chk-table th:first-child,.chk-table td:first-child{
+  position:sticky;left:0;z-index:2;background:#fff;
+  box-shadow:2px 0 4px rgba(0,0,0,.05);
+}
+.chk-table thead th:first-child{background:var(--teal);z-index:4}
+.chk-table tbody tr:nth-child(even) td:first-child{background:var(--band)}
+.chk-table tfoot td:first-child{background:#fff}
 .cellbtn{width:34px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;font-weight:800;cursor:pointer;font-size:14px;color:#bbb}
 .cellbtn.O{background:#e3f1e4;color:var(--green);border-color:#bfe0c2}
 .cellbtn.X{background:#f7e4e1;color:var(--red);border-color:#e8c4bd}
