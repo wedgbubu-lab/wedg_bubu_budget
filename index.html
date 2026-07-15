@@ -740,6 +740,7 @@ $("#csvBtn").onclick=()=>{
 
 /* ===== 월별 요약 ===== */
 const CATS=["카드테크","앱테크","공모주","초대코드","SNS부수입","기타"];
+const CATCOLOR={"카드테크":"#6EA8DE","앱테크":"#6BB077","공모주":"#E0A458","초대코드":"#A97FCB","SNS부수입":"#E4749A","기타":"#B7B2C2"};
 function renderSummary(){
   const total=logs.reduce((s,r)=>s+Number(r.amt||0),0);
   const done=logs.filter(r=>r.paid).reduce((s,r)=>s+Number(r.amt||0),0);
@@ -754,7 +755,7 @@ function renderSummary(){
   $("#catBars").innerHTML=CATS.map(c=>`
     <div class="bar-row">
       <span class="name">${c}</span>
-      <span class="bar-track"><span class="bar-fill" style="width:${byCat[c]/max*100}%"></span></span>
+      <span class="bar-track"><span class="bar-fill" style="width:${byCat[c]/max*100}%;background:${CATCOLOR[c]||'var(--teal-deep)'}"></span></span>
       <span class="val">${won(byCat[c])}</span>
     </div>`).join("");
 
