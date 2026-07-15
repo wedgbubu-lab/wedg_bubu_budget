@@ -167,7 +167,7 @@ td.amt{text-align:right;font-variant-numeric:tabular-nums}
 .week-nav .lbl{font-weight:700;color:var(--navy);font-size:14px}
 .chk-table{min-width:560px}
 .chk-table th,.chk-table td{text-align:center}
-.chk-table td.item{text-align:left;font-size:13px;white-space:normal;min-width:170px}
+.chk-table td.item{text-align:left;font-size:12.5px;white-space:nowrap;min-width:auto;padding-right:14px}
 /* 점검 항목 열 고정 (요일만 좌우 스크롤) */
 .chk-table th:first-child,.chk-table td:first-child{
   position:sticky;left:0;z-index:2;background:#fff;
@@ -804,16 +804,16 @@ function renderTrend(byMonth){
 
 /* ===== 지출 점검표 ===== */
 const ITEMS=[
-  "무지출·최소지출을 실천했나요?",
-  "커피·음료를 사먹지 않았나요?",
-  "외식·배달 대신 집밥을 먹었나요?",
-  "충동구매 없이 하루를 보냈나요?",
-  "장보기 전 냉장고를 확인했나요?",
-  "카드·앱 혜택·적립을 챙겼나요?",
-  "새는 구독료·자동결제는 없었나요?",
-  "오늘 지출을 가계부에 기록했나요?",
-  "하루 지출 목표 금액을 지켰나요?",
-  "부수입 활동을 1개 이상 했나요?"
+  "무지출·최소지출",
+  "커피·음료 안 사기",
+  "집밥 먹기",
+  "충동구매 안 하기",
+  "장보기 전 냉장고 확인",
+  "카드·앱 혜택 챙기기",
+  "구독료·자동결제 점검",
+  "가계부에 기록하기",
+  "지출 목표 지키기",
+  "부수입 활동 1개+"
 ];
 const DAYS=["월","화","수","목","금","토","일"];
 let chkData=load(KEY_CHK,{});
